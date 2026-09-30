@@ -20,6 +20,8 @@ class GameEngine:
         self.timer_duration = 10.0
         self.time_left = self.timer_duration
         self.timer_start = pygame.time.get_ticks()
+        self.streak = 0
+        self.multiplier = 1
 
         box_w, box_h = 130, 44
         self.input_box = TextBox(width // 2 - 110, 230, box_w, box_h)
@@ -65,7 +67,16 @@ class GameEngine:
         self.total_attempts += 1
 
         if user_answer == expected:
-            self.score += 1
+            self.streak += 1
+
+            if self.streak >= 5:
+                self.multiplier = 3
+            elif self.streak >= 3:
+                self.multiplier = 2
+            else:
+                self.multiplier = 1
+
+            self.score += self.multiplier
             self.feedback_msg = (
                 f"CORRECT! {self.num_a} {self.operator} "
                 f"{self.num_b} = {expected}"
@@ -73,6 +84,8 @@ class GameEngine:
             self.feedback_color = (80, 230, 110)
             self.generate_new_card()
         else:
+            self.streak = 0
+            self.multiplier = 1
             self.feedback_msg = f"WRONG! Expected {expected}."
             self.feedback_color = (240, 75, 75)
             self.input_box.clear()
@@ -93,6 +106,8 @@ class GameEngine:
 
         if self.time_left <= 0.0:
             self.total_attempts += 1
+            self.streak = 0
+            self.multiplier = 1
             self.feedback_msg = "TIME'S UP!"
             self.feedback_color = (240, 75, 75)
             self.generate_new_card()
@@ -118,6 +133,16 @@ class GameEngine:
         screen.blit(
             score_surf,
             (self.width // 2 - score_surf.get_width() // 2, 58)
+        )
+
+        streak_surf = self.font_hud.render(
+            f"Streak: {self.streak}    Multiplier: {self.multiplier}x",
+            True,
+            (245, 245, 245)
+        )
+        screen.blit(
+            streak_surf,
+            (self.width // 2 - streak_surf.get_width() // 2, 78)
         )
 
         card_rect = pygame.Rect(
