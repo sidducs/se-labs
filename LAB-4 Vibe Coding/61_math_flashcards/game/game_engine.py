@@ -17,6 +17,10 @@ class GameEngine:
         self.num_b = 0
         self.operator = "+"
 
+        self.timer_duration = 10.0
+        self.time_left = self.timer_duration
+        self.timer_start = pygame.time.get_ticks()
+
         box_w, box_h = 130, 44
         self.input_box = TextBox(width // 2 - 110, 230, box_w, box_h)
         self.submit_btn = pygame.Rect(width // 2 + 30, 230, 90, box_h)
@@ -37,6 +41,8 @@ class GameEngine:
             self.num_a, self.num_b = self.num_b, self.num_a
 
         self.input_box.clear()
+        self.time_left = self.timer_duration
+        self.timer_start = pygame.time.get_ticks()
 
     def compute_expected_answer(self):
         if self.operator == "+":
@@ -82,7 +88,14 @@ class GameEngine:
                 self.submit_answer()
 
     def update(self):
-        pass
+        elapsed = (pygame.time.get_ticks() - self.timer_start) / 1000.0
+        self.time_left = max(0.0, self.timer_duration - elapsed)
+
+        if self.time_left <= 0.0:
+            self.total_attempts += 1
+            self.feedback_msg = "TIME'S UP!"
+            self.feedback_color = (240, 75, 75)
+            self.generate_new_card()
 
     def render(self, screen):
         screen.fill((25, 29, 37))
@@ -146,6 +159,25 @@ class GameEngine:
         )
 
         self.input_box.render(screen)
+
+        timer_x = self.width // 2 - 130
+        timer_y = 215
+        timer_w = 260
+        timer_h = 12
+        pygame.draw.rect(screen, (70, 75, 85), (timer_x, timer_y, timer_w, timer_h), border_radius=6)
+        progress_w = int(timer_w * (self.time_left / self.timer_duration))
+        if progress_w > 0:
+            pygame.draw.rect(
+                screen,
+                (80, 200, 100),
+                (timer_x, timer_y, progress_w, timer_h),
+                border_radius=6
+            )
+        timer_txt = self.font_btn.render(f"Time: {self.time_left:.1f}s", True, (245, 245, 245))
+        screen.blit(
+            timer_txt,
+            (self.width // 2 - timer_txt.get_width() // 2, timer_y + 16)
+        )
 
         pygame.draw.rect(
             screen,
