@@ -3,3 +3,5 @@ __pycache__/
 .coverage
 .coverage.*
 htmlcov/
+capture_real_screenshots.ps1
+run_capture.bat

@@ -30,7 +30,6 @@ Lab-6/
 ├── BranchCoverageTest_credit_card_rewards.py          # Test suite for branch coverage (100%)
 ├── test_credit_card_rewards.py                        # Unified test suite with all test cases
 └── screenshots/
-    ├── initial_coverage_report.png                    # Terminal output before improvements (37% line, 31% branch)
     ├── code_coverage_report.png                       # Terminal output for code coverage (100% line coverage)
     └── branch_coverage_report.png                     # Terminal output for branch coverage (100% branch coverage)
 ```
