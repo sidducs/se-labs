@@ -1,26 +1,48 @@
 def mask_card_number(number):
     """
     Hides all but the last four digits of a card number.
-    Assumes number is a non-empty string.
+    Handles any input safely without crashing.
     """
+    if not isinstance(number, str):
+        return ""
     digits = number.replace(' ', '').replace('-', '')
+    if not digits:
+        return ""
     return '*' * 12 + digits[-4:]
+
 
 def parse_transaction(line):
     """
     Parses 'date,category,amount' into a (category, amount) tuple.
-    Assumes all three fields are present and amount is a whole number.
+    Handles any input safely without crashing. Returns None if invalid.
     """
+    if not isinstance(line, str):
+        return None
     parts = line.split(',')
-    return parts[1].strip().lower(), int(parts[2])
+    if len(parts) < 3:
+        return None
+    category = parts[1].strip().lower()
+    amount_str = parts[2].strip()
+    try:
+        return category, int(amount_str)
+    except (ValueError, TypeError):
+        return None
+
 
 def parse_statement_total(text):
     """
     Reads the amount from a line such as 'Total: 12,500'.
-    Assumes the line has a colon followed by a number.
+    Handles any input safely without crashing. Returns None if invalid.
     """
-    amount = text.split(':')[1]
-    return int(amount.replace(',', ''))
+    if not isinstance(text, str) or ':' not in text:
+        return None
+    parts = text.split(':', 1)
+    amount_str = parts[1].replace(',', '').strip()
+    try:
+        return int(amount_str)
+    except (ValueError, TypeError):
+        return None
+
 
 def main():
     value = input("Enter a card number (e.g. 4111 1111 1111 1234): ")
@@ -31,6 +53,7 @@ def main():
 
     value = input("Enter the statement total line (e.g. Total: 12,500): ")
     print("Statement total:", parse_statement_total(value))
+
 
 if __name__ == "__main__":
     main()

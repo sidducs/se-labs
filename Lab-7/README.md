@@ -15,7 +15,7 @@ This lab explores **property-based fuzz testing** as a dynamic security and qual
 2. Formulate property-based tests using `@given(st.text() | st.none())` to stress-test module functions.
 3. Identify and analyze unhandled exceptions (`AttributeError`, `IndexError`, `ValueError`) discovered by Hypothesis.
 4. Harden the application functions with defensive programming so they handle any input safely without crashing.
-5. Capture real terminal output screenshots (SS1 to SS4) and generate the official lab deliverable DOCX report.
+5. Capture real terminal output screenshots (SS1 to SS4) and submit the final lab report PDF.
 
 ---
 
@@ -24,14 +24,10 @@ This lab explores **property-based fuzz testing** as a dynamic security and qual
 ```text
 Lab-7/
 ├── Lab_7_FuzzTesting_Student_Handout.docx (1).pdf # Official lab handout manual
-├── README.md                                      # Comprehensive lab report & documentation
+├── README.md                                      # Lab report & documentation
 ├── credit_card_rewards_parser.py                  # Fixed & hardened module (crash-proof)
-├── credit_card_rewards_parser_buggy.py            # Original buggy module for comparative testing
-├── credit_card_rewards_parser_fixed.py            # Hardened reference module
 ├── test_credit_card_rewards_parser.py             # Completed Hypothesis fuzz testing suite
-├── generate_lab7_docx.py                          # Automated DOCX report generator
-├── PES1UG25CS846_Siddu_Shirasagi_LAB7.docx        # Final compiled submission document
-├── SRN_NAME_LAB7.docx                             # Submission document alias
+├── PES1UG25CS846_LAB7.pdf                         # Final report PDF with screenshots & reflection
 └── screenshots/
     ├── SS1.png                                    # python credit_card_rewards_parser.py (buggy module)
     ├── SS2.png                                    # pytest test_credit_card_rewards_parser.py (failing on buggy)
@@ -87,25 +83,20 @@ Lab-7/
 
 ### 1. What types of bugs does fuzz testing reveal that traditional unit testing usually misses?
 **Answer:**  
-Traditional unit testing validates predictable behaviors, known paths, and developer-anticipated edge cases (e.g. testing with `"4111 1111 1111 1234"`). In contrast, property-based fuzz testing with Hypothesis generates hundreds of pseudo-random, malformed, and boundary inputs that humans rarely think to test—including `None`, empty strings `""`, missing delimiters, arbitrary Unicode characters, whitespace-only strings, negative quantities, and unformatted inputs. Fuzzing uncovers unhandled exceptions (`AttributeError`, `IndexError`, `ValueError`), injection risks, and unexpected application crashes that would otherwise escape to production.
+Traditional unit tests only check inputs the developer thought of beforehand (the happy path and a few expected edge cases). Fuzz testing generates hundreds of unexpected, malformed, and boundary inputs automatically (such as None, empty strings, missing separators, and bad data types). This easily reveals unhandled crashes like AttributeError, IndexError, and ValueError that manual tests tend to miss.
 
 ### 2. What edge cases and malformed inputs did Hypothesis uncover in each of the three functions?
 **Answer:**  
-Hypothesis uncovered the following specific falsifying examples:
-- **`mask_card_number`:** Failed immediately on `s = None` because `NoneType` lacks the `.replace()` method, raising an unhandled `AttributeError`.
-- **`parse_transaction`:** Failed on `s = None` (`AttributeError`), empty string `s = ""` (`IndexError: list index out of range` because `parts` had only 1 element), and strings where amount is non-numeric (`ValueError`).
-- **`parse_statement_total`:** Failed on `s = None` (`AttributeError`), strings without colons like `s = ""` (`IndexError` on index `[1]`), and colon-only strings `s = ":"` (`ValueError` trying to convert an empty string into an integer).
+• `mask_card_number`: Failed on `s = None`, causing an AttributeError because NoneType does not have a `.replace()` method.  
+• `parse_transaction`: Failed on `s = None` (AttributeError on split), empty string `s = ''` (IndexError because parts has only 1 element), and non-integer amounts like `'abc'` (ValueError on int()).  
+• `parse_statement_total`: Failed on `s = None` (AttributeError), empty string or lines without a colon (IndexError on `text.split(':')[1]`), and strings like `':'` with no number after the colon (ValueError).
 
 ### 3. How did you harden the functions against invalid inputs, and what are the trade-offs between defensive parsing vs crashing?
 **Answer:**  
-The functions were hardened using:
-1. **Type checking:** `isinstance(s, str)` to reject non-string/`None` inputs.
-2. **Boundary and delimiter checks:** Explicitly verifying that required delimiters exist (`':' in text`) and lists have sufficient elements (`len(parts) >= 3`) before indexing.
-3. **Protected type casting:** Encapsulating `int(...)` conversions inside `try...except (ValueError, TypeError)` blocks.
-4. **Safe defaults:** Returning fallback values (`""` or `None`) instead of allowing unhandled exceptions.
+I hardened the functions by adding `isinstance(..., str)` checks, checking list length and delimiter existence before indexing, and wrapping `int()` conversion in try-except blocks, returning `None` or `""` when input is invalid.
 
 **Trade-offs:**  
-Defensive parsing increases application availability and prevents crashes from untrusted inputs. However, silently returning defaults (like `None` or `""`) can mask upstream bugs or pass empty values silently down the processing pipeline. Conversely, crashing or raising explicit custom exceptions makes bugs immediately visible to calling code, but requires every caller to implement thorough exception handling to prevent service termination.
+Defensive parsing prevents unexpected crashes and keeps the service running even when users provide garbage input. However, returning fallback defaults like `None` can sometimes hide upstream bugs if the caller forgets to check the result. Raising exceptions makes bugs immediately obvious, but requires callers to add try-except blocks everywhere to prevent the program from crashing.
 
 ---
 
@@ -113,7 +104,7 @@ Defensive parsing increases application availability and prevents crashes from u
 
 ### 1. Prerequisites
 ```bash
-pip install hypothesis pytest python-docx
+pip install hypothesis pytest
 ```
 
 ### 2. Run Tests on Fixed Module
@@ -124,9 +115,4 @@ pytest test_credit_card_rewards_parser.py -q --no-header -W ignore
 ### 3. Run Interactive Parser
 ```bash
 python credit_card_rewards_parser.py
-```
-
-### 4. Regenerate Submission DOCX
-```bash
-python generate_lab7_docx.py
 ```

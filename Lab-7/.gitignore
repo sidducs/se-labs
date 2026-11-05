@@ -3,6 +3,7 @@ __pycache__/
 .hypothesis/
 .coverage
 .coverage.*
-capture_real_screenshots.ps1
-run_capture.bat
 ~$*
+*.docx
+*.ps1
+*.bat
