@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+capture_real_screenshots.ps1
+run_capture.bat
+~$*
